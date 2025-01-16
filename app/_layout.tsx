@@ -1,39 +1,32 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import React, { useEffect } from "react";
+import { Slot, useRouter, useSegments } from "expo-router";
+import { useAuth, AuthContextProvider } from "../context/authContext";
+import { MenuProvider } from "react-native-popup-menu";
 
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
-
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+const MainLayout = () => {
+  const { isAuthenticated } = useAuth();
+  const segments = useSegments(); //This hooks returns the array of all routes
+  const router = useRouter();
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+    if (typeof isAuthenticated == "undefined") return;
+    const inApp = segments[0] == "(app)";
+
+    if (isAuthenticated && !inApp) {
+      router.replace("/(app)/home");
+    } else if (isAuthenticated == false) {
+      router.replace("/signUp");
     }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
-  }
-
+    //check if user is authentiacted or not
+  }, [isAuthenticated]);
+  return <Slot />;
+};
+export default function _layout() {
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <MenuProvider>
+      <AuthContextProvider>
+        <MainLayout />
+      </AuthContextProvider>
+    </MenuProvider>
   );
 }
