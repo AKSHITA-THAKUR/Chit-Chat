@@ -29,8 +29,9 @@ const ChatItem: React.FC<ChatItemProps> = ({ item}) => {
           userId: item.userId,
         },
       });
-    };
+      console.log("the params to pass are " , item.profileUrl , item.userId , item.username)
 
+    };
   return (
     <TouchableOpacity onPress={handlePress} style={styles.container}>
       <Image
