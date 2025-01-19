@@ -7,18 +7,21 @@ interface User {
   userId: string;
   username: string;
 }
-
+interface user{
+  currentUser: User;
+}
 interface ChatListProps {
   users: User[];
+  currentUser: User;
 }
 
-const ChatList: React.FC<ChatListProps> = ({ users }) => {
+const ChatList: React.FC<ChatListProps> = ({ users ,currentUser }) => {
   return (
     <View style={styles.container}>
       <FlatList
         data={users}
         keyExtractor={(item) => item.userId} // Use userId as a unique key
-        renderItem={({ item }) => <ChatItem item={item} />}
+        renderItem={({ item }) => <ChatItem currentUser={currentUser} item={item} />}
         showsVerticalScrollIndicator={false}
       />
     </View>

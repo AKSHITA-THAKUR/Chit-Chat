@@ -43,7 +43,7 @@ const HomePage = () => {
     <View style={styles.container}>
       <View style={styles.content}>
         {users.length > 0 ? (
-          <ChatList users={users} />
+          <ChatList currentUser={user} users={users} />
         ) : (
           <ActivityIndicator size="large" />
         )}

@@ -1,71 +1,98 @@
-import React, { useEffect, useState ,useRef} from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useLocalSearchParams } from "expo-router";
-import { View, Text, TouchableOpacity,StyleSheet,TextInput, Alert} from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  TextInput,
+  Alert,
+} from "react-native";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { heightPercentageToDP as hp, widthPercentageToDP as wp} from "react-native-responsive-screen";
-import { addDoc, collection, doc, orderBy, setDoc, Timestamp , query, onSnapshot , DocumentData } from "firebase/firestore";
+import {
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from "react-native-responsive-screen";
+import {
+  addDoc,
+  collection,
+  doc,
+  orderBy,
+  setDoc,
+  Timestamp,
+  query,
+  onSnapshot,
+  DocumentData,
+} from "firebase/firestore";
 import { db } from "@/firebaseConfig";
 import { useAuth } from "@/context/authContext";
 import MessageList from "@/components/MessageList";
-import {getRoomId} from "../../common" 
-
+import { getRoomId } from "../../common";
 
 const ChatRoomHeader: React.FC = () => {
   const router = useRouter();
   const [message, setMessage] = useState<DocumentData[]>([]);
-  const {user} = useAuth();   //This is the user id of authenticated person
+  const { user } = useAuth(); //This is the user id of authenticated person
   const textRef = useRef<string>();
- const inputRef = useRef<TextInput>(null);
- const { profileUrl, username, userId } = useLocalSearchParams(); // Access params
+  const inputRef = useRef<TextInput>(null);
+  const { profileUrl, username, userId } = useLocalSearchParams(); // Access params
+  const scrollViewRef = useRef<any>(null);
 
-const handleSend = async () => {
-  let message = textRef?.current?.trim();
-  if (!message) return;
-  try {
-    let roomId = getRoomId(user?.userId , userId);
-    const docRef = doc(db,'rooms' , roomId);
-    const messageRef = collection(docRef , 'messages');
-    textRef.current = "";
-    if(inputRef) inputRef?.current?.clear();
-    const newDoc = await addDoc(messageRef , {
-      userId : user?.userId,
-      text:message,
-      profileUrl : user?.profileUrl,
-      senderName : user?.username,
-      createdAt : Timestamp.fromDate(new Date())
-    });
-    console.log('new message id is' , newDoc.id)
-  } catch (error: any) {
-    Alert.alert("Message", error.message);
+
+  const handleSend = async () => {
+    let message = textRef?.current?.trim();
+    if (!message) return;
+    try {
+      let roomId = getRoomId(user?.userId, userId);
+      const docRef = doc(db, "rooms", roomId);
+      const messageRef = collection(docRef, "messages");
+      textRef.current = "";
+      if (inputRef) inputRef?.current?.clear();
+      const newDoc = await addDoc(messageRef, {
+        userId: user?.userId,
+        text: message,
+        profileUrl: user?.profileUrl,
+        senderName: user?.username,
+        createdAt: Timestamp.fromDate(new Date()),
+      });
+      console.log("new message id is", newDoc.id);
+    } catch (error: any) {
+      Alert.alert("Message", error.message);
+    }
+  };
+  const updateScrollView = () =>{
+    setTimeout(()=>{
+   scrollViewRef?.current?.scrollToEnd()
+    },1000)
   }
-};
-console.log("The params i got are" , profileUrl , username , userId)
-const createRoomIfNotExist = async() =>{  
-let roomId = getRoomId(user?.userId , userId );
-await setDoc(doc(db , 'rooms' , roomId),{
-  roomId,
-  createdAt: Timestamp.fromDate(new Date())
-});
-}
-console.log("the params are" , )
-useEffect(()=>{
-  createRoomIfNotExist();
-  let roomId = getRoomId(user?.userId , userId);
- const docRef = doc(db , "rooms" , roomId);
- const messageRef = collection(docRef , 'messages');
- const q = query(messageRef , orderBy('createdAt' , 'asc'));
+  const createRoomIfNotExist = async () => {
+    let roomId = getRoomId(user?.userId, userId);
+    await setDoc(doc(db, "rooms", roomId), {
+      roomId,
+      createdAt: Timestamp.fromDate(new Date()),
+    });
+  };
+  
+  useEffect(() => {
+    createRoomIfNotExist();
+    let roomId = getRoomId(user?.userId, userId);
+    const docRef = doc(db, "rooms", roomId);
+    const messageRef = collection(docRef, "messages");
+    const q = query(messageRef, orderBy("createdAt", "asc"));
 
-let unsub = onSnapshot(q,(snapshot) =>{
-  let allMessages = snapshot.docs.map(doc =>{
-    return doc.data();
-  });
-  setMessage([...allMessages])
-})
-return unsub;
-},[])
-console.log('The user is ' , user)
+    let unsub = onSnapshot(q, (snapshot) => {
+      let allMessages = snapshot.docs.map((doc) => {
+        return doc.data();
+      });
+      setMessage([...allMessages]);
+    });
+    return unsub;
+  }, []);
+useEffect(()=>{
+updateScrollView();
+},[message])
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.headerContainer}>
@@ -90,18 +117,20 @@ console.log('The user is ' , user)
             <Ionicons name="videocam" size={20} color="#333" />
           </TouchableOpacity>
         </View>
+
       </View>
 
-       <MessageList message={message} />
+      <MessageList scrollViewRef={scrollViewRef} message={message} User={user} />
+
       <View style={styles.inputContainer}>
         <TextInput
-        ref={inputRef}
-          onChangeText={value => textRef.current = value}
+          ref={inputRef}
+          onChangeText={(value) => (textRef.current = value)}
           placeholder="Type your message..."
           style={styles.input}
           multiline={true}
         />
-        <TouchableOpacity  onPress={handleSend} style={styles.sendButton}>
+        <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
           <Ionicons name="send" size={20} color="#fff" />
         </TouchableOpacity>
       </View>

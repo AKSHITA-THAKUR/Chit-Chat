@@ -3,3 +3,11 @@ const sortedIds = [userId1 , userId2].sort();
 const roomId = sortedIds.join('-');
 return roomId
 }
+
+export const formatDate = date =>{
+    var day = date.getDate();
+    var monthNames = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep",  "oct", "nov", 'dec'];
+    var month = monthNames[date.getMonth()];
+    var formattedDate = day + ' ' + month;
+    return formattedDate;
+}

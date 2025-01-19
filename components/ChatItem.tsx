@@ -3,7 +3,12 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
+import { DocumentData } from "firebase/firestore";
 import { useRouter } from "expo-router";
+import { useEffect , useState } from "react";
+import { doc , collection , query , onSnapshot , orderBy } from "firebase/firestore";
+import { getRoomId  , formatDate} from "@/common";
+import { db } from "@/firebaseConfig";
 import React from "react";
 import { Image } from "expo-image";
 
@@ -15,10 +20,50 @@ interface User {
 
 interface ChatItemProps {
   item: User;
+  currentUser:User
+}
+//https://cdn.pixabay.com/photo/2012/04/13/21/07/user-33638_640.pnghttp
+
+const ChatItem: React.FC<ChatItemProps> = ({ item , currentUser}) => {
+
+  const router = useRouter();
+  const generateMsg = () =>{
+    if(typeof lastMessage == 'undefined' ) return 'Loading...';
+    if(lastMessage){
+      if(currentUser?.userId == lastMessage?.userId) return "You :  " + lastMessage?.text;
+      return lastMessage?.text
+    }
+    else{
+      return 'Say Hii 👋 '
+    }
+    }
+    const renderTime = () =>{
+if(lastMessage){
+  let date = lastMessage?.createdAt;
+  return   formatDate(new Date(date?.seconds * 1000))
 }
 
-const ChatItem: React.FC<ChatItemProps> = ({ item}) => {
-  const router = useRouter();
+    }
+  const [lastMessage, setLastMessage] = useState<DocumentData | null>(null);
+    useEffect(() => {
+      let roomId = getRoomId(currentUser?.userId, item?.userId);
+      const docRef = doc(db, "rooms", roomId);
+      const messageRef = collection(docRef, "messages");
+      const q = query(messageRef, orderBy("createdAt", "asc"));
+  
+      let unsub = onSnapshot(q, (snapshot) => {
+        let allMessages = snapshot.docs.map((doc) => {
+          return doc.data();
+        });
+        const length = allMessages.length;
+        const last = length-1;
+        setLastMessage(allMessages[last] ? allMessages[last] : null)
+      });
+      return unsub;
+    }, []);
+
+console.log(lastMessage)
+
 
     const handlePress = () => {
       router.push({
@@ -29,7 +74,6 @@ const ChatItem: React.FC<ChatItemProps> = ({ item}) => {
           userId: item.userId,
         },
       });
-      console.log("the params to pass are " , item.profileUrl , item.userId , item.username)
 
     };
   return (
@@ -46,13 +90,13 @@ const ChatItem: React.FC<ChatItemProps> = ({ item}) => {
             {item.username}
           </Text>
           <Text style={styles.time} numberOfLines={1}>
-            Time
+           {renderTime()}
           </Text>
         </View>
 
         {/* Last Message */}
         <Text style={styles.lastMessage} numberOfLines={1}>
-          Last message
+        {generateMsg()}
         </Text>
       </View>
     </TouchableOpacity>
