@@ -7,7 +7,8 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { db } from "@/firebaseConfig";
-import { collection, getDocs } from "firebase/firestore";
+import { useAuth } from "@/context/authContext";
+import { collection, getDocs , query , where } from "firebase/firestore";
 import { useRouter } from "expo-router";
 
 interface GroupData {
@@ -20,11 +21,16 @@ interface GroupData {
 const GroupChat = () => {
   const [groups, setGroups] = useState<GroupData[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth(); 
+
   const router = useRouter();
   const fetchGroups = async () => {
+    if (!user?.userId) return; 
     try {
       const groupCollectionRef = collection(db, "groupCollection");
-      const groupSnapshot = await getDocs(groupCollectionRef);
+      const q = query(groupCollectionRef, where("members", "array-contains", user.userId));
+
+      const groupSnapshot = await getDocs(q);
 
       const groupList = groupSnapshot.docs.map((doc) => ({
         id: doc.id,

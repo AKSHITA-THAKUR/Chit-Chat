@@ -15,9 +15,10 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
-import { doc, collection, addDoc, Timestamp } from "firebase/firestore"; // ✅ Marker: Ensure proper imports
+import { doc, collection, addDoc, Timestamp , query , onSnapshot , orderBy } from "firebase/firestore"; // ✅ Marker: Ensure proper imports
 import { useAuth } from "@/context/authContext";
 import { db  } from "@/firebaseConfig";
+import MessageList from "@/components/MessageList";
 
 const GroupChatRoom = () => {
   const router = useRouter();
@@ -50,6 +51,21 @@ const GroupChatRoom = () => {
     };
   
 
+    useEffect(() => {
+      const docRef = doc(db, "groupCollection", groupId as string);
+      const messageRef = collection(docRef, "messages");
+      const q = query(messageRef, orderBy("createdAt", "asc"));
+  
+      let unsub = onSnapshot(q, (snapshot) => {
+        let allMessages = snapshot.docs.map((doc) => {
+          return doc.data();
+        });
+        setMessage([...allMessages]);
+      });
+      return unsub;
+    }, []);
+  
+  
 
   return (
     <View style={{ flex: 1 }}>
@@ -75,7 +91,7 @@ const GroupChatRoom = () => {
           </TouchableOpacity>
         </View>
       </View>
-
+<MessageList message={message}  User={user}/>
       <View style={styles.inputContainer}>
         <TextInput
           ref={inputRef}
