@@ -9,6 +9,9 @@ const _layout = () => {
         header:() => <ChatHeader/>
      }}/>
      <Stack.Screen name='chatRom' options={{headerShown:false}}/>
+     <Stack.Screen name='GroupChat' options={{headerShown:false}}/>
+     <Stack.Screen name='groupRoom' options={{headerShown:false}}/>
+
     </Stack>
   )
 }

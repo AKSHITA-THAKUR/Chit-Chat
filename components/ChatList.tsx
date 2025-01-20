@@ -7,9 +7,13 @@ interface User {
   userId: string;
   username: string;
 }
-interface user{
-  currentUser: User;
+interface Group {
+  groupId: string;
+  groupName: string;
+  members: string[];  // List of userIds for group members
+  type: "group";  // Specify that it's a group
 }
+
 interface ChatListProps {
   users: User[];
   currentUser: User;

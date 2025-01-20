@@ -1,13 +1,19 @@
-import { View, Text,  TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
 import { DocumentData } from "firebase/firestore";
 import { useRouter } from "expo-router";
-import { useEffect , useState } from "react";
-import { doc , collection , query , onSnapshot , orderBy } from "firebase/firestore";
-import { getRoomId  , formatDate} from "@/common";
+import { useEffect, useState } from "react";
+import {
+  doc,
+  collection,
+  query,
+  onSnapshot,
+  orderBy,
+} from "firebase/firestore";
+import { getRoomId, formatDate } from "@/common";
 import { db } from "@/firebaseConfig";
 import React from "react";
 import { Image } from "expo-image";
@@ -20,62 +26,59 @@ interface User {
 
 interface ChatItemProps {
   item: User;
-  currentUser:User
+  currentUser: User;
 }
-//https://cdn.pixabay.com/photo/2012/04/13/21/07/user-33638_640.pnghttp
 
-const ChatItem: React.FC<ChatItemProps> = ({ item , currentUser}) => {
-
+const ChatItem: React.FC<ChatItemProps> = ({ item, currentUser }) => {
   const router = useRouter();
-  const generateMsg = () =>{
-    if(typeof lastMessage == 'undefined' ) return 'Loading...';
-    if(lastMessage){
-      if(currentUser?.userId == lastMessage?.userId) return "You :  " + lastMessage?.text;
-      return lastMessage?.text
-    }
-    else{
-      return 'Say Hii 👋 '
-    }
-    }
-    const renderTime = () =>{
-if(lastMessage){
-  let date = lastMessage?.createdAt;
-  return   formatDate(new Date(date?.seconds * 1000))
-}
 
+  const generateMsg = () => {
+    if (typeof lastMessage == "undefined") return "Loading...";
+    if (lastMessage) {
+      if (currentUser?.userId == lastMessage?.userId)
+        return "You :  " + lastMessage?.text;
+      return lastMessage?.text;
+    } else {
+      return "Say Hii 👋 ";
     }
-  const [lastMessage, setLastMessage] = useState<DocumentData | null>(null);
-    useEffect(() => {
-      let roomId = getRoomId(currentUser?.userId, item?.userId);
-      const docRef = doc(db, "rooms", roomId);
-      const messageRef = collection(docRef, "messages");
-      const q = query(messageRef, orderBy("createdAt", "asc"));
+  };
   
-      let unsub = onSnapshot(q, (snapshot) => {
-        let allMessages = snapshot.docs.map((doc) => {
-          return doc.data();
-        });
-        const length = allMessages.length;
-        const last = length-1;
-        setLastMessage(allMessages[last] ? allMessages[last] : null)
+  const renderTime = () => {
+    if (lastMessage) {
+      let date = lastMessage?.createdAt;
+      return formatDate(new Date(date?.seconds * 1000));
+    }
+  };
+  const [lastMessage, setLastMessage] = useState<DocumentData | null>(null);
+  useEffect(() => {
+    let roomId = getRoomId(currentUser?.userId, item?.userId);
+    const docRef = doc(db, "rooms", roomId);
+    const messageRef = collection(docRef, "messages");
+    const q = query(messageRef, orderBy("createdAt", "asc"));
+
+    let unsub = onSnapshot(q, (snapshot) => {
+      let allMessages = snapshot.docs.map((doc) => {
+        return doc.data();
       });
-      return unsub;
-    }, []);
+      const length = allMessages.length;
+      const last = length - 1;
+      setLastMessage(allMessages[last] ? allMessages[last] : null);
+    });
+    return unsub;
+  }, []);
 
-console.log(lastMessage)
+  console.log(lastMessage);
 
-
-    const handlePress = () => {
-      router.push({
-        pathname: "/chatRom",
-        params: {
-          profileUrl: item.profileUrl,
-          username: item.username,
-          userId: item.userId,
-        },
-      });
-
-    };
+  const handlePress = () => {
+    router.push({
+      pathname: "/chatRom",
+      params: {
+        profileUrl: item.profileUrl,
+        username: item.username,
+        userId: item.userId,
+      },
+    });
+  };
   return (
     <TouchableOpacity onPress={handlePress} style={styles.container}>
       <Image
@@ -90,13 +93,13 @@ console.log(lastMessage)
             {item.username}
           </Text>
           <Text style={styles.time} numberOfLines={1}>
-           {renderTime()}
+            {renderTime()}
           </Text>
         </View>
 
         {/* Last Message */}
         <Text style={styles.lastMessage} numberOfLines={1}>
-        {generateMsg()}
+          {generateMsg()}
         </Text>
       </View>
     </TouchableOpacity>
@@ -141,8 +144,8 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: "#777",
     textAlign: "right",
-    marginRight:wp(10),
-    marginTop:hp(2)
+    marginRight: wp(10),
+    marginTop: hp(2),
   },
   lastMessage: {
     fontSize: hp(1.6),

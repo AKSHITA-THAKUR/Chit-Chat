@@ -3,21 +3,35 @@ import {
   Text,
   Button,
   StyleSheet,
+  TextInput,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import React, { useEffect } from "react";
 import { useState } from "react";
 import { useAuth } from "@/context/authContext";
+import { db } from "@/firebaseConfig";
 import ChatList from "@/components/ChatList";
-import { query, where, getDocs } from "firebase/firestore";
-import { userRef } from "@/firebaseConfig";
+import { query, where, getDocs , doc, setDoc,collection, Timestamp} from "firebase/firestore";
+import {  userRef } from "@/firebaseConfig";
+type User = {
+  userId: string;
+  username: string;
+  profileUrl: string;
+};
+
 const HomePage = () => {
   const { logout, user } = useAuth();
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<any>([]);
+  const [groupName, setGroupName] = useState(""); 
+  const [isCreatingGroup, setIsCreatingGroup] = useState(false); 
+  const [groupIds , setGroupIds] = useState<any>([]);
+
 
   const handleLogout = async () => {
     await logout();
   };
+  const newCollectionRef = collection(db, 'groupCollection');
 
   const getUsers = async () => {
     // Fetch users from Firebase
@@ -25,17 +39,18 @@ const HomePage = () => {
     const querySnapshot = await getDocs(q);
     let data:any = [];
     querySnapshot.forEach((doc) => {
-      data.push({ ...doc.data() });
+      data.push({ ...doc.data() , type: "user" });
     });
-    console.log('got users: ' , data )
     setUsers(data);
+    return data; 
   };
+
 
   useEffect(() => {
     if (user?.uid) {
       getUsers();
     }
-  }, []);
+  }, [user]);
 
   console.log("user data ", user);
 
@@ -48,6 +63,7 @@ const HomePage = () => {
           <ActivityIndicator size="large" />
         )}
       </View>
+
       <Button title="LOGOUT" onPress={handleLogout} />
     </View>
   );
@@ -65,4 +81,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+
 });

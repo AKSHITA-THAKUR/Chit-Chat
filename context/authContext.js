@@ -6,7 +6,7 @@ import {
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import { auth, db } from "../firebaseConfig";
-import { addDoc, doc, getDoc, setDoc } from "firebase/firestore";
+import {  doc, getDoc, setDoc } from "firebase/firestore";
 export const AuthContext = createContext();
 
 export const AuthContextProvider = ({ children }) => {
@@ -40,7 +40,7 @@ if(docSnap.exists()){
 
   const login = async (email, password) => {
     try {
-      const response = await signInWithEmailAndPassword(auth, email, password);
+       await signInWithEmailAndPassword(auth, email, password);
       return { success: true };
     } catch (error) {
       console.log("the error is ", error.message);

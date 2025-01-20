@@ -1,11 +1,10 @@
 import React, { useEffect } from "react";
 import { Slot, useRouter, useSegments } from "expo-router";
 import { useAuth, AuthContextProvider } from "../context/authContext";
-import { MenuProvider } from "react-native-popup-menu";
 
 const MainLayout = () => {
   const { isAuthenticated } = useAuth();
-  const segments = useSegments(); //This hooks returns the array of all routes
+  const segments = useSegments(); 
   const router = useRouter();
 
   useEffect(() => {
@@ -17,16 +16,13 @@ const MainLayout = () => {
     } else if (isAuthenticated == false) {
       router.replace("/signUp");
     }
-    //check if user is authentiacted or not
   }, [isAuthenticated]);
-  return <Slot />;
+  return <Slot />; //used to render the currently selected route. t dynamically renders the correct child screen based on the navigation state.
 };
 export default function _layout() {
   return (
-    <MenuProvider>
       <AuthContextProvider>
         <MainLayout />
       </AuthContextProvider>
-    </MenuProvider>
   );
 }

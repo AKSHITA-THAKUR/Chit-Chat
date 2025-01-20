@@ -38,8 +38,6 @@ const ChatRoomHeader: React.FC = () => {
   const textRef = useRef<string>();
   const inputRef = useRef<TextInput>(null);
   const { profileUrl, username, userId } = useLocalSearchParams(); // Access params
-  const scrollViewRef = useRef<any>(null);
-
 
   const handleSend = async () => {
     let message = textRef?.current?.trim();
@@ -62,11 +60,7 @@ const ChatRoomHeader: React.FC = () => {
       Alert.alert("Message", error.message);
     }
   };
-  const updateScrollView = () =>{
-    setTimeout(()=>{
-   scrollViewRef?.current?.scrollToEnd()
-    },1000)
-  }
+
   const createRoomIfNotExist = async () => {
     let roomId = getRoomId(user?.userId, userId);
     await setDoc(doc(db, "rooms", roomId), {
@@ -74,7 +68,7 @@ const ChatRoomHeader: React.FC = () => {
       createdAt: Timestamp.fromDate(new Date()),
     });
   };
-  
+
   useEffect(() => {
     createRoomIfNotExist();
     let roomId = getRoomId(user?.userId, userId);
@@ -90,9 +84,7 @@ const ChatRoomHeader: React.FC = () => {
     });
     return unsub;
   }, []);
-useEffect(()=>{
-updateScrollView();
-},[message])
+
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.headerContainer}>
@@ -117,10 +109,9 @@ updateScrollView();
             <Ionicons name="videocam" size={20} color="#333" />
           </TouchableOpacity>
         </View>
-
       </View>
 
-      <MessageList scrollViewRef={scrollViewRef} message={message} User={user} />
+      <MessageList message={message} User={user} />
 
       <View style={styles.inputContainer}>
         <TextInput

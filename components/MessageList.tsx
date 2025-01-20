@@ -1,5 +1,6 @@
 import { View, Text, FlatList, StyleSheet } from "react-native";
 import React from "react";
+import { useRef } from "react";
 import { RefObject } from "react";
 import { heightPercentageToDP as hp , widthPercentageToDP as wp } from "react-native-responsive-screen";
 import { DocumentData } from "firebase/firestore";
@@ -13,10 +14,11 @@ interface User {
 interface MessageListProps {
   message: DocumentData[];
   User: User;
-  scrollViewRef:RefObject<FlatList<any>>
 }
 
-const MessageList: React.FC<MessageListProps> = ({ message, User , scrollViewRef }) => {
+const MessageList: React.FC<MessageListProps> = ({ message, User  }) => {
+    const scrollViewRef = useRef<any>(null);
+  
   return (
     <FlatList
     ref={scrollViewRef}
@@ -38,8 +40,10 @@ const MessageList: React.FC<MessageListProps> = ({ message, User , scrollViewRef
           </View>
         );
       }}
-      contentContainerStyle={{ paddingBottom: 80 }} // Add padding to account for the input
-
+      contentContainerStyle={{ paddingBottom: 80 }} // Add padding for input
+      onContentSizeChange={() => {
+        scrollViewRef?.current?.scrollToEnd({ animated: true });
+      }}
     />
   );
 };
