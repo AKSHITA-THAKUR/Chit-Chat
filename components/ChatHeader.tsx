@@ -1,8 +1,8 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { StatusBar } from "react-native";
-import { Image } from "expo-image";
-import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import { query, where, getDocs } from "firebase/firestore";
+import { db , userRef } from '@/firebaseConfig';
+import React , {useEffect , useState} from "react";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -10,16 +10,35 @@ import {
 import { useAuth } from "@/context/authContext";
 import { useRouter } from "expo-router"; // Import the useRouter hook
 
-const blurhash =
-  "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
-
+type User = {
+  userId: string;
+  username: string;
+  profileUrl: string;
+};
 const ChatHeader = () => {
-  const { user } = useAuth();
+  const { user  } = useAuth();
   const router = useRouter(); 
+  const [users , setUsers] = useState<User[]>([]);
 
   const navigateToGroupChat = () => {
-    router.push("/GroupChat"); // Navigates to the GroupChat screen
+    router.push({pathname:"/(app)/Modal" }); // Navigates to the GroupChat screen
   };
+  
+  const getUsers = async () => {
+    try {
+      const q = query(userRef, where("userId", "!=", user?.uid));
+      const querySnapshot = await getDocs(q);
+      let data:any = [];
+      querySnapshot.forEach((doc) => {
+        data.push({ ...doc.data() });
+      });
+      setUsers(data);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+  
+  
 
   return (
     <View
@@ -46,15 +65,30 @@ const ChatHeader = () => {
           style={{
             width: hp(5),
             height: hp(5),
-            marginRight:wp(7),
-            borderRadius: hp(2.5), // Circular button
-            backgroundColor: "white", // Button color
+            marginRight:wp(3),
+            borderRadius: hp(2.5), 
+            backgroundColor: "white", 
             justifyContent: "center",
             alignItems: "center",
             marginLeft: hp(2), 
           }}
         >
-          <Text style={{ fontSize: hp(3), color: "pink" }}>+</Text> {/* The 'G' can be an icon or text */}
+          <Text style={{ fontSize: hp(3), color: "pink" }}>+</Text> 
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={()=>router.push("/(app)/GroupChat")} 
+          style={{
+            width: hp(5),
+            height: hp(5),
+            marginRight:wp(7),
+            borderRadius: hp(2.5), 
+            backgroundColor: "white", 
+            justifyContent: "center",
+            alignItems: "center",
+            marginLeft: hp(2), 
+          }}
+        >
+          <Text style={{ fontSize: hp(3), color: "pink" }}>G</Text>
         </TouchableOpacity>
       </View>
     </View>

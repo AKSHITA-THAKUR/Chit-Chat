@@ -6,16 +6,16 @@ import {
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import { auth, db } from "../firebaseConfig";
-import {  doc, getDoc, setDoc } from "firebase/firestore";
+import {  doc, getDoc, setDoc , collection , getDocs } from "firebase/firestore";
 export const AuthContext = createContext();
+
 
 export const AuthContextProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-
+  const [userData, setUserData] = useState([]); // All users from Firestore
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
-      console.log("got user:", user?.email);
       if (user) {
         setIsAuthenticated(true);
         setUser(user);
@@ -75,9 +75,24 @@ if(docSnap.exists()){
       return { success: false, msg: error.message };
     }
   };
+  const fetchAllUsers = async () => {
+    try {
+      const usersRef = collection(db, "users");
+      const querySnapshot = await getDocs(usersRef);
+
+      let users = [];
+      querySnapshot.forEach((doc) => {
+        users.push(doc.data()); // Add each user's data to the array
+      });
+
+      setUserData(users); // Update the state with fetched users
+    } catch (error) {
+      console.error("Error fetching users:", error.message);
+    }
+  };
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated, login, logout, Register }}
+      value={{ user, isAuthenticated, login, logout, Register ,  userData  , fetchAllUsers}}
     >
       {children}
     </AuthContext.Provider>

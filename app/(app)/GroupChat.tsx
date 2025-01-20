@@ -1,52 +1,64 @@
-import { View, Text, FlatList, StyleSheet , TouchableOpacity } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import { db } from '@/firebaseConfig'; 
-import { collection, getDocs } from 'firebase/firestore'; 
-import { useRouter } from 'expo-router';
-interface Group {
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
+import React, { useEffect, useState } from "react";
+import { db } from "@/firebaseConfig";
+import { collection, getDocs } from "firebase/firestore";
+import { useRouter } from "expo-router";
+
+interface GroupData {
   id: string;
   groupName: string;
-  members: string[]; 
-  createdAt: any; 
+  members: string[];
+  createdAt: any;
 }
 
 const GroupChat = () => {
-  const [groups, setGroups] = useState<Group[]>([]); 
-  const [loading, setLoading] = useState(true); 
+  const [groups, setGroups] = useState<GroupData[]>([]);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const fetchGroups = async () => {
     try {
-      const groupCollectionRef = collection(db, 'groupCollection');
+      const groupCollectionRef = collection(db, "groupCollection");
       const groupSnapshot = await getDocs(groupCollectionRef);
-      
-      const groupList = groupSnapshot.docs.map(doc => ({
-        id: doc.id,  
-        ...doc.data(), // Other fields (groupName, members, etc.)
-      })) as Group[]; 
 
-      setGroups(groupList); // Set the group data to state
-      setLoading(false); // Stop loading
+      const groupList = groupSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(), 
+      })) as GroupData[];
+
+      setGroups(groupList); 
+      setLoading(false); 
     } catch (error) {
-      console.error('Error fetching groups: ', error);
+      console.error("Error fetching groups: ", error);
       setLoading(false);
     }
   };
-  const handleGroupPress = (group: Group) => {
+  const handleGroupPress = (group: GroupData) => {
     router.push({
-      pathname: '/groupRoom',  
-      params: { 
+      pathname: "/groupRoom",
+      params: {
         groupId: group.id,
         groupName: group.groupName,
-        members: JSON.stringify(group.members), 
-      }
+        members: JSON.stringify(group.members),
+      },
     });
   };
   useEffect(() => {
     fetchGroups();
   }, []);
 
-  const renderItem = ({ item }: { item: Group }) => (
-    <TouchableOpacity style={styles.groupItem} onPress={()=>{handleGroupPress(item)}}>
+  const renderItem = ({ item }: { item: GroupData }) => (
+    <TouchableOpacity
+      style={styles.groupItem}
+      onPress={() => {
+        handleGroupPress(item);
+      }}
+    >
       <Text style={styles.groupName}>{item.groupName}</Text>
     </TouchableOpacity>
   );
@@ -70,17 +82,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   groupItem: {
     padding: 15,
     marginVertical: 10,
-    backgroundColor: '#f1f1f1',
+    backgroundColor: "#f1f1f1",
     borderRadius: 8,
   },
   groupName: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
 

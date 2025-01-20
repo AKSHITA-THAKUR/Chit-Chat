@@ -22,16 +22,12 @@ type User = {
 
 const HomePage = () => {
   const { logout, user } = useAuth();
-  const [users, setUsers] = useState<any>([]);
-  const [groupName, setGroupName] = useState(""); 
-  const [isCreatingGroup, setIsCreatingGroup] = useState(false); 
-  const [groupIds , setGroupIds] = useState<any>([]);
+  const [users, setUsers] = useState<User[]>([]);
 
 
   const handleLogout = async () => {
     await logout();
   };
-  const newCollectionRef = collection(db, 'groupCollection');
 
   const getUsers = async () => {
     // Fetch users from Firebase
@@ -39,7 +35,7 @@ const HomePage = () => {
     const querySnapshot = await getDocs(q);
     let data:any = [];
     querySnapshot.forEach((doc) => {
-      data.push({ ...doc.data() , type: "user" });
+      data.push({ ...doc.data() });
     });
     setUsers(data);
     return data; 
